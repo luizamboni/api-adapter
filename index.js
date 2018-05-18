@@ -1,8 +1,9 @@
 
 
 class ApiAdapter {
-  constructor(config) {
+  constructor(config, middleware) {
     this.config = config
+    this.middleware = middleware
   }
 
   _getPathValue(path, obj) {
@@ -19,61 +20,32 @@ class ApiAdapter {
   _buildPathInObject(path, obj, value) {
     const [ head, ...tail ] = path.split(".")
 
+
     if(!obj[head]) 
       obj[head] = {}
     
-    if(tail.length > 0)
-      obj[head] = this._buildPathInObject(tail.join("."), obj[head], value)
-    else 
-      obj[head] = value
-    
+    obj[head] = (tail.length > 0) ? this._buildPathInObject(tail.join("."), obj[head], value) : value
+
     return obj
   }
 
-  _buildQuery(req) {
-    
+  _convertProverties(toKey, req) {
     const queries = this.config
-                  .properties
-                  .filter(p => p.to.startsWith("query."))
-
-    const newQ = {}
-    
-    for(const q of queries) {
-      const { from, to } = q
-      const queryKey = to.replace(/^query\./, "")
-      this._buildPathInObject(queryKey, newQ, this._getPathValue(from, req))
-    }
-    return newQ
-  }
-
-  _buildData(req) {
-    
-    const queries = this.config
-                  .properties
-                  .filter(p => p.to.startsWith("data."))
-
-    const newQ = {}
-    
-    for(const q of queries) {
-      const { from, to } = q
-      const queryKey = to.replace(/^data\./, "")
-      this._buildPathInObject(queryKey, newQ, this._getPathValue(from, req))
-    }
-    return newQ
-  }
-
-
-  _buildHeader(req) {
-    const queries = this.config
-    .properties
-    .filter(p => p.to.startsWith("headers."))
+                        .properties
+                        .filter(p => p.to.startsWith(`${toKey}.`))
 
     const newQ = {}
 
     for(const q of queries) {
-    const { from, to } = q
-    const queryKey = to.replace(/^headers\./, "")
-    this._buildPathInObject(queryKey, newQ, this._getPathValue(from, req))
+      const { from, to, value, middleware = [] } = q
+      const queryKey = to.replace(new RegExp(`^${toKey}\.`), "")
+      let value2 = value || this._getPathValue(from, req)
+
+      middleware.forEach(funcName => {
+        value2 = this.middleware[funcName](value2)
+      })
+
+      this._buildPathInObject(queryKey, newQ, value2)
     }
     return newQ
   }
@@ -81,18 +53,30 @@ class ApiAdapter {
   fromApi(req) {
     const { host, path, method = "GET" } = this.config
 
+    const toConvert =  Array.from(new Set(this.config.properties.map(p => p.to.split(".")[0] ) ))
     const uri =  [ host, path ].join("")
-    const query = this._buildQuery(req)
-    const headers = this._buildHeader(req)
-    const data = this._buildData(req)
 
-    return {
+    const resp = {
       method,
       uri,
-      query,
-      headers,
-      data
     }
+
+    toConvert.forEach(to => {
+      resp[to] = this._convertProverties(to, req)
+    })
+
+    return resp
+
+    // const query = this._buildQuery(req)
+    // const headers = this._buildHeader(req)
+    // const data = this._buildData(req)
+    // return {
+    //   method,
+    //   uri,
+    //   query,
+    //   headers,
+    //   data
+    // }
   }
 }
 
