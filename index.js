@@ -37,9 +37,14 @@ class ApiAdapter {
     const newQ = {}
 
     for(const q of queries) {
-      const { from, to, value, middleware = [] } = q
-      const queryKey = to.replace(new RegExp(`^${toKey}\.`), "")
+      const { from, to, value, middleware = [], required } = q
+      
+      const queryKey = to.replace(new RegExp(`^${toKey}\.`), "")      
+
       let value2 = value || this._getPathValue(from, req)
+
+      if(!value2 && required)
+        throw new Error(`${to} is required`)
 
       middleware.forEach(funcName => {
         value2 = this.middleware[funcName](value2)
