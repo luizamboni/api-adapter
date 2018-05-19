@@ -8,7 +8,7 @@ const config = {
   properties: [
     { from: "headers.referrer", to: "query.referrer" },
     { from: "query.size" , to: "query.limit"},
-    { from: "query.userId" , to: "query.user_id"},
+    { from: "query.userId" , to: "query.user_id" , middleware: [ "parseInt" ] },
     { value: "json" , to: "query.t" },
     { from: "query.terms", to: "query.q",  middleware: [ "threeFirstWords" ] },
     { from: "query.type", to: "query.type", required: true }
@@ -26,7 +26,7 @@ console.log(apiAdapter.fromApi({
   headers: { referrer: "http://www.americanas.com "},
   query: { 
     size: 10,
-    userId: 30,
+    userId: "30",
     terms: "notebook asus 16gb blabla bla",
     type: "supplier"
   }

@@ -47,7 +47,7 @@ class ApiAdapter {
         throw new Error(`${to} is required`)
 
       middleware.forEach(funcName => {
-        value2 = this.middleware[funcName](value2)
+        value2 = (this.middleware[funcName] || global[funcName])(value2)
       })
 
       this._buildPathInObject(queryKey, newQ, value2)
