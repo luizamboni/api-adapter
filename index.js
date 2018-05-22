@@ -55,33 +55,30 @@ class ApiAdapter {
     return newQ
   }
 
+  setTransportCallbak(callback) {
+    this.transport = callback
+  }
+
   fromApi(req) {
     const { host, path, method = "GET" } = this.config
 
     const toConvert =  Array.from(new Set(this.config.properties.map(p => p.to.split(".")[0] ) ))
-    const uri =  [ host, path ].join("")
+    const url =  [ host, path ].join("")
 
     const resp = {
       method,
-      uri,
+      url,
     }
 
     toConvert.forEach(to => {
       resp[to] = this._convertProverties(to, req)
     })
 
-    return resp
 
-    // const query = this._buildQuery(req)
-    // const headers = this._buildHeader(req)
-    // const data = this._buildData(req)
-    // return {
-    //   method,
-    //   uri,
-    //   query,
-    //   headers,
-    //   data
-    // }
+    if (this.transport) {
+      return this.transport(resp)
+    } else
+      return resp
   }
 }
 
