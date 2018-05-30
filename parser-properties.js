@@ -1,6 +1,6 @@
 const ObjectPath = require("object-path")
 
-parseProperties = (props, data, opts = {}) => {
+parseProperties = (props, currentData, allData, opts = {}) => {
  const newResponse = {}
  
  for(const prop of props ) {
@@ -9,21 +9,21 @@ parseProperties = (props, data, opts = {}) => {
    let value2
 
    if (properties) {
-     const Root = ObjectPath.get(data, from)
+     const Root = ObjectPath.get(currentData, from)
 
-     value2 = Root.map(el => (
-       parseProperties(properties, el)
+     value2 = Root.map(currentData => (
+       parseProperties(properties, currentData, allData, opts)
      ))
 
      
    } else {
-     value2 = from ? ObjectPath.get(data, from) : value
+     value2 = from ? ObjectPath.get(currentData, from) : value
 
      if(!value2 && required)
        throw new Error(`${to} is required`)
 
      middleware.forEach(funcName => {
-       value2 = (opts.middleware[funcName] || global[funcName])(value2)
+       value2 = (opts.middleware[funcName] || global[funcName])(value2, currentData, allData)
      })
    }
 

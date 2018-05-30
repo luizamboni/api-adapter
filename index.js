@@ -14,7 +14,7 @@ class ApiAdapter {
   parseRequest(data) {
     const { host, path, method = "GET", request } = this.config
 
-    const newResp = parseProperties(request, data, { middleware: this.middleware })
+    const newResp = parseProperties(request, data, data, { middleware: this.middleware })
 
     newResp.method = method
     newResp.url = [ host, path ].join("")
@@ -24,7 +24,7 @@ class ApiAdapter {
   parseResponse(data) {
     const { host, path, method = "GET", response } = this.config
 
-    const newResp = parseProperties(response, data, { middleware: this.middleware })
+    const newResp = parseProperties(response, data, data, { middleware: this.middleware })
     return newResp
   }
 }
