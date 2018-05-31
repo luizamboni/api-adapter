@@ -11,6 +11,20 @@ class ApiAdapter {
     this.emitter = new EventEmitter()
   }
 
+  compile() {
+    const { host, path, method, request } = this.config
+    return new Function("data",
+      `
+      const newData ={
+        method: "${method}",
+        url: "${[ host, path ].join("")}"
+      };
+      
+      
+      return newData;
+    `)
+  }
+
   parseRequest(data) {
     const { host, path, method = "GET", request } = this.config
 
