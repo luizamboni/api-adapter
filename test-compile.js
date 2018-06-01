@@ -36,7 +36,7 @@ const request2 = {
     referrer: "http://www.shoptime.com"
   },
   query: { 
-    size: 10,
+    size: 23,
     userId: "30",
     terms: "iphone 16gb blabla bla",
     type: "seller"
@@ -70,7 +70,8 @@ function generateFunction(config, middlewares) {
   function getProperties(config) {
     return config.map(conf => {
       const { to, from, value, middleware = [] } = conf
-      const valueAssign = [ `output.${to}`, `data.${from} || "${value}"` ]
+      const resultValue = value ? `"${value}"` :  `data.${from}`;
+      const valueAssign = [ `output.${to}`, resultValue ]
 
       return applyMiddlewares(middleware, valueAssign)
     }).join(";\n")
