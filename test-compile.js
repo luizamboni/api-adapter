@@ -44,7 +44,7 @@ const request2 = {
 }
 
 const allMiddlewares = {
-  threeFirstWords: (terms, data, allData) => {
+  threeFirstWords: (terms, data) => {
     return terms.split(" ").slice(0, 3).join(" ") 
   }
 }
@@ -56,7 +56,7 @@ function generateFunction(config, middlewares) {
   function applyMiddlewares(middlewares, valueAssign) {
     const [ left, right ] = valueAssign;
     const rightWithMiddleware = middlewares.reduce((prev, state) => 
-      `${state}(${right})`
+      `${state}(${right}, data)`
     , right)
     return [ left , rightWithMiddleware ].join(" = ")
   }
